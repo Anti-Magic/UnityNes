@@ -12,7 +12,10 @@ public class Main : MonoBehaviour
         byte[] nesFileData = File.ReadAllBytes(nesFilePath);
         emulator = new Emulator(nesFileData);
 
-        emulator.Tick(Time.deltaTime);
+        for (int i = 0; i < 10; i++)
+        {
+            emulator.Tick(Time.deltaTime);
+        }
     }
 
     void Update()
