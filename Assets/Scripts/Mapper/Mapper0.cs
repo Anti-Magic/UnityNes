@@ -53,6 +53,7 @@ public class Mapper0 : IMapper
                 address &= 0xBFFF;
             }
             PRG[address] = value;
+            return;
         }
         throw new NesException(string.Format("Mapper0 Write address error: {0}", address));
     }

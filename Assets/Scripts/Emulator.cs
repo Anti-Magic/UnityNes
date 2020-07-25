@@ -13,7 +13,7 @@ public class Emulator
     private Memory memory;
     private Bus bus;
     private CPU cpu;
-    private Debugger debugger;
+    public Debugger debugger;
 
     public Emulator(byte[] nesFileData)
     {
@@ -27,8 +27,8 @@ public class Emulator
     public void Tick(float dt)
     {
         debugger.BeginTickCPU();
-        cpu.Tick();
         debugger.EndTickCPU();
+        cpu.Tick();
         debugger.Print();
     }
 }

@@ -10,6 +10,7 @@ public class Debugger
     private char[] buffer = new char[256];
     private Bus bus;
     private CPU cpu;
+    private List<string> lines = new List<string>();
 
     public Debugger(Bus bus, CPU cpu)
     {
@@ -23,11 +24,17 @@ public class Debugger
 
     public void Print()
     {
-        Debug.Log(new string(buffer).TrimEnd());
+        lines.Add(new string(buffer).TrimEnd());
+        //Debug.Log(lines[lines.Count - 1]);
         for (int i = 0; i < buffer.Length; i++)
         {
             buffer[i] = ' ';
         }
+    }
+
+    public void Save(string path)
+    {
+        System.IO.File.WriteAllLines(path, lines);
     }
 
     public void BeginTickCPU()
@@ -81,40 +88,48 @@ public class Debugger
     private void WriteOprand(CPU.Opcode opcode)
     {
         string oprand = "";
-        int len = GetOprandLength(opcode);
-        if (len == 1)
-        {
-            oprand = Hex(bus.Read8((ushort)(cpu.PC + 1)));
-        }
-        else if(len == 2)
-        {
-            oprand = Hex(bus.Read8((ushort)(cpu.PC + 2))) + Hex(bus.Read8((ushort)(cpu.PC + 1)));
-        }
-
-        switch (opcode.name)
-        {
-            case "STX":
-                WriteToBuffer(string.Format("${0} = {1}", oprand, Hex(cpu.X)), 20);
-                break;
-        }
-
         switch (opcode.addrMode)
         {
-            case CPU.AddrMode.Imm:
-                WriteToBuffer(string.Format("#${0}", oprand), 20);
+            case CPU.AddrMode.Imp:
                 break;
 
-            case CPU.AddrMode.Zpg:
-            case CPU.AddrMode.Zpx:
-            case CPU.AddrMode.Zpy:
-            case CPU.AddrMode.Izx:
-            case CPU.AddrMode.Izy:
+            case CPU.AddrMode.Imm:
+                oprand = "#$" + Hex(bus.Read8((ushort)(cpu.PC + 1)));
+                break;
+
             case CPU.AddrMode.Abs:
             case CPU.AddrMode.Abx:
             case CPU.AddrMode.Aby:
             case CPU.AddrMode.Ind:
+                oprand = "$" + Hex(bus.Read8((ushort)(cpu.PC + 2))) + Hex(bus.Read8((ushort)(cpu.PC + 1)));
+                break;
+
             case CPU.AddrMode.Rel:
-                WriteToBuffer(string.Format("${0}", oprand), 20);
+                oprand = "$" + Hex(bus.Read8((ushort)(cpu.PC + 1)) + cpu.PC + 2);
+                break;
+
+            default:
+                oprand = "$" + Hex(bus.Read8((ushort)(cpu.PC + 1)));
+                break;
+        }
+
+        switch (opcode.name)
+        {
+            //case "STA":
+            //case "BIT":
+            //    WriteToBuffer(string.Format("{0} = {1}", oprand, Hex(cpu.A)), 20);
+            //    break;
+
+            //case "STX":
+            //    WriteToBuffer(string.Format("{0} = {1}", oprand, Hex(cpu.X)), 20);
+            //    break;
+
+            //case "STY":
+            //    WriteToBuffer(string.Format("{0} = {1}", oprand, Hex(cpu.X)), 20);
+            //    break;
+
+            default:
+                WriteToBuffer(oprand, 20);
                 break;
         }
     }

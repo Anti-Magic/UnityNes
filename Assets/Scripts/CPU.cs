@@ -117,7 +117,7 @@ public class CPU
         A = 0;
         X = 0;
         Y = 0;
-        P = Flag.R;
+        P = Flag.I | Flag.R;
         S = 0xFD;
         //regPC = bus.Read16(0xFFFC);
         PC = 0xC000;
@@ -290,7 +290,8 @@ public class CPU
 
     private void ADC(ushort addr)
     {
-        int sum = A + bus.Read8(addr) + GetFlag(Flag.C);
+        int v = bus.Read8(addr);
+        int sum = A + v + GetFlag(Flag.C);
         // 把所有数当做无符号数看待，运算结果超过255，则进位
         if (sum > 0xFF)
         {
@@ -305,7 +306,7 @@ public class CPU
         // 1、两个正数相加，溢出得到负数
         // 2、两个负数相加，溢出得到正数
         // 当正数和负数相加时，永远不会发生溢出
-        if ((A & 0x80) != (sum & 0x80))
+        if ((A & 0x80) == (v & 0x80) && (A & 0x80) != (sum & 0x80))
         {
             SetFlag(Flag.V);
         }
@@ -415,6 +416,10 @@ public class CPU
         if ((v & A) == 0)
         {
             SetFlag(Flag.Z);
+        }
+        else
+        {
+            ClearFlag(Flag.Z);
         }
         if ((v & 0x40) > 0)
         {
@@ -707,7 +712,8 @@ public class CPU
 
     private void PHP(ushort addr)
     {
-        PushStack8((byte)P);
+        // PHP的时候B强制为1，坑
+        PushStack8((byte)(P | Flag.B | Flag.R));
     }
 
     private void PLA(ushort addr)
@@ -719,9 +725,10 @@ public class CPU
 
     private void PLP(ushort addr)
     {
+        // PLP的时候B强制为0，并且不需要再次设置Z和N
         P = (Flag)PopStack8();
-        CheckFlagN((byte)P);
-        CheckFlagZ((byte)P);
+        ClearFlag(Flag.B);
+        SetFlag(Flag.R);
     }
 
     private void RLA(ushort addr)
@@ -816,7 +823,8 @@ public class CPU
 
     private void SBC(ushort addr)
     {
-        int sum = A - bus.Read8(addr) - (1 - GetFlag(Flag.C));
+        int v = bus.Read8(addr);
+        int sum = A - v - (1 - GetFlag(Flag.C));
         if (sum >= 0)
         {
             SetFlag(Flag.C);
@@ -825,8 +833,8 @@ public class CPU
         {
             ClearFlag(Flag.C);
         }
-        // 同ADC
-        if ((A & 0x80) != (sum & 0x80))
+        // 与ADC类似
+        if ((A & 0x80) != (v & 0x80) && (A & 0x80) != (sum & 0x80))
         {
             SetFlag(Flag.V);
         }
