@@ -32,10 +32,12 @@ public class Bus
         if (address < 0x2000)
         {
             mapper.Write(address, value);
+            return;
         }
         if (address >= 0x8000)
         {
             mapper.Write(address, value);
+            return;
         }
         throw new NesException("Bus.Write8 unknown address");
     }

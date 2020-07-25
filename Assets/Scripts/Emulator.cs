@@ -18,6 +18,7 @@ public class Emulator
     public Emulator(byte[] nesFileData)
     {
         cart = new Cartridge(nesFileData);
+        memory = new Memory();
         bus = new Bus(cart.mapper, memory);
         cpu = new CPU(bus);
         debugger = new Debugger(bus, cpu);

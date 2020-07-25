@@ -105,41 +105,28 @@ public class Debugger
                 break;
 
             case CPU.AddrMode.Zpg:
-                break;
-
             case CPU.AddrMode.Zpx:
-                break;
-
             case CPU.AddrMode.Zpy:
-                break;
-
             case CPU.AddrMode.Izx:
-                break;
-
             case CPU.AddrMode.Izy:
-                break;
-
             case CPU.AddrMode.Abs:
-                WriteToBuffer(string.Format("${0}", oprand), 20);
-                break;
-
             case CPU.AddrMode.Abx:
-                break;
-
             case CPU.AddrMode.Aby:
-                break;
-
             case CPU.AddrMode.Ind:
-                break;
-
             case CPU.AddrMode.Rel:
+                WriteToBuffer(string.Format("${0}", oprand), 20);
                 break;
         }
     }
 
     private string Hex(long v)
     {
-        return Convert.ToString(v, 16).ToUpper();
+        string s = Convert.ToString(v, 16).ToUpper();
+        if (s.Length == 1 || s.Length == 3)
+        {
+            s = "0" + s;
+        }
+        return s;
     }
 
     private void WriteToBuffer(string s, long pos)
@@ -152,11 +139,7 @@ public class Debugger
 
     private void WriteToBuffer(long v, int pos)
     {
-        string vs = Convert.ToString(v, 16).ToUpper();
-        if (vs.Length == 1 || vs.Length == 3)
-        {
-            vs = "0" + vs;
-        }
+        string vs = Hex(v);
         for (int i = 0; i < vs.Length; i++)
         {
             buffer[pos + i] = vs[i];
